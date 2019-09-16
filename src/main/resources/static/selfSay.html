@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>聊天中...</title>
+<style type="text/css">
+::-webkit-scrollbar {
+	width: 1px;
+	height: 6px;
+}
+body{margin:0px;padding:0px;}
+li{list-style-type: none;margin:0px;padding:0px;}
+#sayBox{
+	height: 260px;
+    width: 360px;
+    overflow: scroll;
+}
+#box{background-image: img/4908302_112409176000_2.jpg;}
+</style>
+</head>
+<body>
+
+
+	
+	<div id="box" style="width:500px;height:400px;margin:0 auto;">
+		<div style="width:100%;line-height:40px;color:white;font-weight:800;height:40px;background: -webkit-linear-gradient(#27A1DC, #AFDCF2);">
+			<a style="color:white;" href="#" id="name"></a>
+		</div>
+		
+		<!-- 聊天口 -->
+		<div id="sayBox" style="float:left;">
+			<p id="info"></p>
+		</div>
+		
+		<div style="width:136px;height:360px;border-left:1px solid green;float:right;">
+			<ul id="userList"></ul>
+		</div>
+		<div style="width:360px;height:70px;float: left;overflow: hidden;">
+			<textarea placeholder="输入聊天内容..." onkeyup="getData(this)" id="msg"  rows="" style="width:100%;height:90%;" cols=""></textarea>
+		</div>
+		<div style="width:360px;height:20px;float: left;border-top:1px solid #ccc;">
+			<button onclick="send()">发送</button>
+		</div>
+	</div>
+	
+	
+
+</body>
+
+<script type="text/javascript">
+	var ws = null;// websocket对象,一条管道
+	//var target = "ws://localhost:8888/WebSocket_01/echo";
+	var target = "ws://flysli.eicp.net/WebSocket_01/echo";
+	var username = null;
+	function connect() {
+		target = target + "?=" + username;
+		if ('WebSocket' in window) {
+			ws = new WebSocket(target);
+		} else if ('MozWebSocket' in window) {
+
+			ws = new MozWebSocket(target);
+		} else {
+			alert('你的浏览器暂不支持websocket！');
+			return;
+		}
+		ws.onmessage = function(data) {
+
+			document.getElementById("name").innerHTML=username;
+			if (data.data != undefined) {
+				var info = document.getElementById("info");
+				var infos = info.innerHTML;
+				var obj = eval('(' + data.data + ')');
+				var str = "";
+				var dbType = obj[0].dbType;
+				switch (dbType) {
+				case 1:
+					if (obj[0].publisher == username) {
+						
+						str = str
+								+ "<div style='padding:5px;background: -webkit-linear-gradient(#46d8f0, #70c0e7);margin-top:20px;border:1px solid #ccc;border-radius:6px;width:48%;margin-left:48%;margin-right:10px;'><div><span style='font-size:12px;font-weight:800;color:white;'>"+obj[0].name+"</span>&nbsp;<span style='font-size:12px;color:#f4f4f4;'>"+obj[0].date+"</span></div><div style='padding:5px;font-size:12px;'>"+obj[0].content+"</div></div>";
+					} else {
+						str = str
+						+ "<div style='background: -webkit-linear-gradient(#46d8f0, #70c0e7);padding:5px;margin-top:20px;border:1px solid #ccc;border-radius:6px;width:50%;margin-left:2%;'><div>&nbsp;<span style='font-size:12px;font-weight:800;color:white;'>"+obj[0].name+"</span>&nbsp;<span style='font-size:12px;color:#f4f4f4;'>"+obj[0].date+"</span></div><div  style='padding:5px;font-size:12px;'>"+obj[0].content+"</div></div>";
+					}
+					
+					break;
+				case 2:
+					str = str
+							+ "<p style='text-align:center;font-size:12px;color:red;font-weight:800;'>"
+							+ obj[0].content + "上线了</p>";
+					break;
+				case 3:
+					str = str
+							+ "<p style='text-align:center;font-size:12px;color:#ccc;font-weight:800;'>"
+							+ obj[0].content + "下线了</p>";
+				}
+				info.innerHTML = infos + str;
+				var dy=document.getElementById("sayBox");
+				dy.scrollTop=dy.scrollHeight;
+				//给好友列表赋值
+				var users = document.getElementById("userList");
+				var us = obj[0].names;
+				var uss = "";
+				for (var i = 0; i < us.length; i++) {
+					uss = uss + "<li  onclick='selfSay(\""+us[i]+"\")' style='text-align:center;font-size:12px;border:1px solid #ccc;'>" + us[i] + "</li>";
+				}
+
+				if (us.length > 0) {
+					users.innerHTML = uss;
+				}
+
+			}
+
+		}
+
+	}
+
+	function send() {
+		var msg = document.getElementById("msg");
+		if(msg.value.trim()=="" || msg.value.trim()==null){
+			return;
+		}
+		ws.send(msg.value);
+		msg.value="";
+
+	}
+
+	/* 页面载入 */
+	window.onload = function() {
+		var url = location.href;
+		username = url.substring(url.indexOf("username=") + 9);
+		username=decodeURI(username);
+		connect();
+	}
+	/* 按回车的时候 */
+	function getData(key){
+		if(event.keyCode==13){
+			send();
+		}
+	}
+</script>
+</html>

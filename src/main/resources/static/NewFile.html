@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>聊天中...</title>
+
+    <!-- 引用BootStrap样式文件 -->
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+
+
+    <style type="text/css">
+        ::-webkit-scrollbar {
+            width: 1px;
+            height: 6px;
+        }
+
+        body {
+            font-family: "黑体";
+        }
+
+        .btn {
+            border-radius: 50%;
+        }
+
+        .btn:hover {
+            color: #fff;
+            cursor: pointer;
+        }
+
+        li {
+            list-style-type: none;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .fly {
+            color: #4da2fd;
+            cursor: pointer;
+        }
+
+        #sayBox {
+            height: 260px;
+            width: 360px;
+            overflow: scroll;
+        }
+
+        .hovB:hover {
+            border: #ccc;
+            border-radius: 2px;
+        }
+
+        #userList {
+            margin: 0px;
+            padding: 0px;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        #userList li {
+            text-align: left;
+        }
+
+        .hov:hover {
+            background: -webkit-linear-gradient(#ffffff, #f6f6f6, #ffffff);
+            cursor: pointer;
+        }
+
+        /* 聊天语句展示 */
+
+    </style>
+</head>
+<body>
+
+
+<div id="box"
+     style=" border-radius:6px;overflow:hidden;box-shadow: 0 0 16px #DCDCDC;width:500px;height:400px;border-bottom:1px solid #AFDCF2;margin:0 auto;">
+    <div style="width:96%;margin:0 auto;border-bottom:1px solid #ccc;line-height:40px;color:white;font-weight:800;height:40px;/* background: -webkit-linear-gradient(#27A1DC, #AFDCF2); */">
+        <span class="btn close" style="background:red;color:red;font-size:12px;">×</span>
+        <span class="btn small" style="background:#fecf25;color:#fecf25;font-size:12px;">一</span>
+        <span class="btn big" style="background:#89ca62;color:#89ca62;font-size:12px;">＋</span>
+        <span style="color:white;" href="#" id="name"></span>
+    </div>
+
+    <!-- 聊天口 -->
+    <div id="sayBox" style="float:left;">
+        <p id="info"></p>
+    </div>
+
+    <div style="width:136px;height:360px;border-left:1px solid #ccc;float:right;overflow: scroll;">
+        <ul id="userList"></ul>
+    </div>
+    <div style="width:360px;height:70px;float: left;overflow: hidden;">
+        <textarea placeholder="输入聊天内容..." onkeyup="getData(this)" id="msg" rows=""
+                  style="border:0px;border-top:1px solid #ccc;width:90%;height:80%;margin-left:20px;"
+                  cols=""></textarea>
+    </div>
+    <div style="width:360px;height:20px;float: left;">
+        <!-- <button onclick="send()">发送</button> -->
+        <a class="fly" onclick="openExpressoin()" style="margin-left:20px;">
+            <img width="15" style="border:1px solid white;"class="hovB" src="img/xx.png"></a>
+    </div>
+</div>
+
+<!-- 表情 -->
+<div id="expression"
+     style="background:#fff;width:300px;display:none;border:1px solid #ccc;border-radius:4px;position: fixed;top:20%;left:30%;">
+    <div style="width:96%;margin:0 auto;border-bottom:1px solid #ccc;height:30px;"></div>
+    <div style="width:96%;margin:0 auto;">
+        <img onclick="getE(1)" id="1" style="margin:3px;" src="expression/1.gif">
+        <img onclick="getE(2)" id="2" style="margin:3px;" src="expression/2.gif">
+        <img onclick="getE(3)" id="3" style="margin:3px;" src="expression/3.gif">
+        <img onclick="getE(4)" id="4" style="margin:3px;" src="expression/4.gif">
+        <img onclick="getE(5)" id="5" style="margin:3px;" src="expression/5.gif">
+        <img onclick="getE(6)" id="6" style="margin:3px;" src="expression/6.gif">
+        <img onclick="getE(7)" id="7" style="margin:5px;" src="expression/7.gif">
+        <img onclick="getE(8)" id="8" style="margin:3px;" src="expression/8.gif">
+        <img onclick="getE(9)" id="9" style="margin:3px;" src="expression/8.gif">
+        <img onclick="getE(9)" id="9" style="margin:3px;" src="expression/12.png">
+    </div>
+    <div style="width:90%;margin:0 auto;"></div>
+</div>
+
+</body>
+
+
+<script type="text/javascript" src="js/msg.js"></script>
+<script type="text/javascript" src="js/userInfo.js"></script>
+
+<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script> <!-- 获取用户所在地址，显示城市名称:例[上海] -->
+
+<script type="text/javascript">
+    var ws = null;// websocket对象,一条管道
+    //var target = "ws://localhost:8888echo";
+    var target = "ws://flysli.eicp.netecho";
+    target = "ws://172.16.4.6:8081/echo";
+    var param = "";
+    var username = null;
+
+    function connect() {
+
+        /*
+        *组合参数拼接到URL中
+        */
+        var address = returnCitySN["cname"];
+        target = target + "?=" + username + "&" + address;
+
+
+        if ('WebSocket' in window) {
+            ws = new WebSocket(target);
+        } else if ('MozWebSocket' in window) {
+
+            ws = new MozWebSocket(target);
+        } else {
+            alert('你的浏览器暂不支持websocket！');
+            return;
+        }
+        ws.onmessage = function (data) {
+            console.log(document.hidden)
+            if (document.hidden == true) {
+                document.title = '【新消息】';
+            } else {
+                document.title = '聊天中';
+            }
+            document.getElementById("name").innerHTML = username;
+            if (data.data != undefined) {
+                var info = document.getElementById("info");
+                var infos = info.innerHTML;
+                /* if(data.data.indexOf("me")>-1){
+
+                    info.innerHTML="<span style='color:blue;'>"+infos+data.data+"</span>";
+                }else{
+                    info.innerHTML=infos+data.data;
+                } */
+                var obj = JSON.parse(data.data);
+                /*eval('(' + data.data + ')');*/
+                console.log(obj)
+                var str = "";
+                var dbType = obj.dbType;
+                switch (dbType) {
+                    case 1:
+                        if (obj.publisher == username) {
+
+                            str = str
+                                + "<div style='padding:5px;background: -webkit-linear-gradient(#46d8f0, #70c0e7);margin-top:20px;border:1px solid #ccc;border-radius:6px;width:48%;margin-left:48%;margin-right:10px;'><div><span style='font-size:12px;font-weight:800;color:white;'>" + obj.name + "</span>&nbsp;<span style='font-size:12px;color:#f4f4f4;'>" + obj.date + "</span></div><div style='padding:5px;font-size:12px;'><p style='line-height:22px;vertical-align:middle;'>" + obj.content + "</p></div></div>";
+
+                        } else {
+                            str = str
+                                + "<div style='background:#e9efef;padding:5px;margin-top:20px;border-radius:6px;width:50%;margin-left:2%;'><div>&nbsp;<span style='font-size:12px;font-weight:800;color:#000;'>" + obj.name + "</span>&nbsp;<span style='font-size:12px;color:#ccc;'>" + obj.date + "</span></div><div  style='padding:5px;font-size:12px;line-height:20px;'>" + obj.content + "</div></div>";
+                        }
+
+                        break;
+                    case 2:
+                        str = str
+                            + "<div style='text-align:center;font-size:10px;color:white;margin:3px;'>"
+                            + "<span style='filter:alpha(opacity=50);background: -webkit-linear-gradient(#a7d9f1, #70c0e7);padding:3px;border-radius:5px;'>" + obj.content + "上线了</span>"
+                            + "</div>";
+                        break;
+                    case 3:
+                        str = str
+                            + "<p style='text-align:center;font-size:12px;color:#ccc;font-weight:800;'>"
+                            + obj.content + "下线了</p>";
+                }
+                info.innerHTML = infos + str;
+                var dy = document.getElementById("sayBox");
+                dy.scrollTop = dy.scrollHeight;
+                //给好友列表赋值
+                var users = document.getElementById("userList");
+                var us = obj.names;
+                var uss = "";
+                if (us != null) {
+                    for (var i = 0; i < us.length; i++) {
+                        var userName = us[i];
+                        var ip = returnCitySN["cip"];
+                        var add = "";
+                        var addresss = obj.address;
+                        add = addresss[username];
+
+                        uss = uss + "<li  onclick='selected(\"" + us[i] + "\")'  class='hov' style='overflow:hidden;white-space:nowrap;text-align:left;margin:2px 0px 0px 0px;font-size:12px;height:20px;line-height:20px;vertical-align: middle;'>" +
+                            "<img title='[IP:" + ip + "]' width='20' style='vertical-align: middle;' src='img/touxiang.png'>" +
+                            " " + userName + "<a title='[IP:" + ip + "]'  style='vertical-align: middle;' onclick='selfSay(\"" + us[i] + "\")'></a>" +
+                            "</li>";
+                    }
+                    if (us.length > 0) {
+                        users.innerHTML = uss;
+                    }
+                }
+
+
+            }
+
+        }
+
+    }
+
+
+    /* 页面载入 */
+    window.onload = function () {
+        var url = location.href;
+        username = url.substring(url.indexOf("username=") + 9);
+        if (username == "" || username == null || url.indexOf("=") < 0) {
+            window.location.href = "Login.html";
+        }
+        username = decodeURI(username);
+        connect();
+    }
+
+    function flash_title() {
+        //当窗口效果为最小化，或者没焦点状态下才闪动
+        if (isMinStatus() || !window.focus) {
+            newMsgCount();
+        } else {
+            document.title = '订单管理中心-AOOXING';//窗口没有消息的时候默认的title内容
+            window.clearInterval();
+        }
+    }
+
+    function remind() {
+        function newMsgCount() {
+            if (flag) {
+                flag = false;
+                document.title = '【新消息】';
+            } else {
+                flag = true;
+                document.title = '【　　　】';
+            }
+            window.setTimeout('flash_title(0)', 380);
+        }
+    }
+
+
+</script>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 设置可触摸设备的禁止缩放; -->
+<meta name="viewport"
+	content="width=device-width, 
+                                     initial-scale=1.0, 
+                                     maximum-scale=1.0, 
+                                     user-scalable=no">
+<title>HOME</title>
+<link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+<script src="../jslib/respond.min.js"></script>
+<!-- css樣式 -->
+<style type="text/css">
+::-webkit-scrollbar {
+	width: 1px;
+	height: 6px;
+}
+body {
+	margin: 0px;
+	padding: 0px;
+	
+}
+</style>
+	
+
+</head>
+<body>
+
+	<!-- 聊天口 -->
+		<div style="width:96%;border:1px solid #ccc;border-radius:6px;margin:0 auto;margin-top:10px;">
+			<div style="width:100%;">
+				<div class="alert alert-warning" role="alert">...</div>
+			</div>
+			<div id="sayBox" style="height:300px;overflow: scroll;">
+				<p id="info"></p>
+			</div>
+			<div style="width:96%;height:70px;margin:0 auto;overflow: hidden;border-top:1px solid #ccc;padding-top:10px;">
+				
+				<div style="width:66%;float:left;margin-left:10px;text-align:right;">
+					<input style="width:100%;" type="text" class="form-control" onkeyup="getData(this)" id="msg"  />
+				</div>
+				<div style="width:29%;float:right;">
+				<a class="fly"  onclick="openExpressoin()" style=""><img width="15" style="border:1px solid white;" class="hovB" src="../img/xx.png"></a>
+					<a style="margin-left:3px;" onclick="send()" class="btn btn-success">发送</a>
+				</div>
+			</div>
+			
+			<div style="width:360px;height:20px;float: left;">
+				<!-- <button onclick="send()">发送</button> -->
+				<a class="fly"  onclick="openExpressoin()" style="margin-left:20px;"></a>
+			</div>
+		
+		</div>
+		
+		<!-- 表情 -->
+	<div id="expression"  style="background:#fff;width:300px;display:none;border:1px solid #ccc;border-radius:4px;position: fixed;top:20%;left:30%;">
+		<div style="width:96%;margin:0 auto;border-bottom:1px solid #ccc;height:30px;"></div>
+		<div style="width:96%%;margin:0 auto;">
+			<img onclick="getE(1)" id="1" style="margin:3px;" src="/WebSocket_01/expression/1.gif">
+			<img onclick="getE(2)" id="2"  style="margin:3px;"  src="/WebSocket_01/expression/2.gif">
+			<img onclick="getE(3)" id="3"  style="margin:3px;"  src="/WebSocket_01/expression/3.gif">
+			<img onclick="getE(4)" id="4"  style="margin:3px;"  src="/WebSocket_01/expression/4.gif">
+			<img onclick="getE(5)" id="5"  style="margin:3px;" src="/WebSocket_01/expression/5.gif">
+			<img onclick="getE(6)" id="6"  style="margin:3px;"  src="/WebSocket_01/expression/6.gif">
+			<img onclick="getE(7)" id="7"  style="margin:5px;"  src="/WebSocket_01/expression/7.gif">
+			<img onclick="getE(8)" id="8"  style="margin:3px;"  src="/WebSocket_01/expression/8.gif">
+			<img onclick="getE(9)" id="9"  style="margin:3px;"  src="/WebSocket_01/expression/8.gif">
+			<img onclick="getE(9)" id="9"  style="margin:3px;"  src="/WebSocket_01/expression/12.png">
+		</div>
+		<div style="width:90%;margin:0 auto;"></div>
+	</div>
+	
+</body>
+<script type="text/javascript" src="/WebSocket_01/jslib/jquery-1.4.3.js"></script>
+<script type="text/javascript" src="../js/msg.js"></script>
+<script type="text/javascript">
+	var ws = null;// websocket对象,一条管道
+	var target = "ws://flysli.eicp.net/WebSocket_01/echo";
+	var param="";
+	var username = null;
+	function connect() {
+		
+		/*
+		*组合参数拼接到URL中
+		*/
+		target = target + "?=" + username+"&中国";
+		
+		
+		
+		if ('WebSocket' in window) {
+			ws = new WebSocket(target);
+		} else if ('MozWebSocket' in window) {
+
+			ws = new MozWebSocket(target);
+		} else {
+			alert('你的浏览器暂不支持websocket！');
+			return;
+		}
+		ws.onmessage = function(data) {
+
+			
+			if (data.data != undefined) {
+				var info = document.getElementById("info");
+				var obj = eval('(' + data.data + ')');
+				var str = "";
+				var dbType = obj[0].dbType;
+				switch (dbType) {
+				case 1:
+					if (obj[0].publisher == username) {
+						
+						 str = str
+								+ "<div style='padding:5px;background: -webkit-linear-gradient(#46d8f0, #70c0e7);margin-top:20px;border:1px solid #ccc;border-radius:6px;width:48%;margin-left:48%;margin-right:10px;'><div><span style='font-size:12px;font-weight:800;color:white;'>"+obj[0].name+"</span>&nbsp;<span style='font-size:12px;color:#f4f4f4;'>"+obj[0].date+"</span></div><div style='padding:5px;font-size:12px;'><p style='line-height:22px;vertical-align:middle;'>"+obj[0].content+"</p></div></div>";
+						 
+					} else {
+						str = str
+						+ "<div style='background:#e9efef;padding:5px;margin-top:20px;border-radius:6px;width:50%;margin-left:2%;'><div>&nbsp;<span style='font-size:12px;font-weight:800;color:#000;'>"+obj[0].name+"</span>&nbsp;<span style='font-size:12px;color:#ccc;'>"+obj[0].date+"</span></div><div  style='padding:5px;font-size:12px;line-height:20px;'>"+obj[0].content+"</div></div>";
+					}
+					
+					break;
+				case 2:
+					str = str
+							+ "<div style='text-align:center;font-size:10px;color:white;margin:3px;'>"
+							+"<span style='filter:alpha(opacity=50);background: -webkit-linear-gradient(#a7d9f1, #70c0e7);padding:3px;border-radius:5px;'>"+ obj[0].content + "上线了</span>"
+							+"</div>";
+					break;
+				case 3:
+					str = str
+							+ "<p style='text-align:center;font-size:12px;color:#ccc;font-weight:800;'>"
+							+ obj[0].content + "下线了</p>";
+				}
+				info.innerHTML = info.innerHTML + str;
+				var dy=document.getElementById("sayBox");
+				dy.scrollTop=dy.scrollHeight;
+				
+
+			}
+
+		}
+
+	}
+	/* 页面载入 */
+	window.onload = function() {
+		var url = location.href;
+		username = url.substring(url.indexOf("username=") + 9);
+		if(username=="" || username==null || url.indexOf("=")<0){
+			window.location.href="/WebSocket_01/Login.html";
+		}
+		username=decodeURI(username);
+		connect();
+	}
+	
+	
+</script>
+</html>
